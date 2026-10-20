@@ -145,6 +145,14 @@ app, express, admin, db,
 publicDir: require("path").join(__dirname, "public")
 });
 
+// Deployment diagnostic endpoint: confirms this exact server build is live.
+app.get("/healthz", (_req, res) => res.status(200).json({
+  ok: true,
+  service: "hidden-dinox-academy",
+  postbackRoute: "GET /postback",
+  build: "academy-postback-repair-2026-10-21"
+}));
+
 app.set("etag", true);
 
 app.use(express.static("public", {
@@ -236,91 +244,11 @@ res.send("OK");
 });
 
 
-app.get("/check", async (req,res)=>{
+// Старые публичные проверки позволяли угадывать Trader ID и обходить авторизацию.
+// Academy использует только защищённые /api/me и /api/trader-id с Firebase ID token.
+app.get("/check", (req, res) => res.status(410).json({ ok: false, error: "USE_AUTHENTICATED_ACADEMY_API" }));
+app.get("/check-deposit", (req, res) => res.status(410).json({ ok: false, amount: 0, error: "USE_AUTHENTICATED_ACADEMY_API" }));
 
-const trader = req.query.trader_id;
-
-if(!trader){
-return res.json({ok:false});
-}
-
-try{
-
-/* 🔥 проверяем в Firebase */
-
-if(!db){
-console.log("❌ DB NOT CONNECTED");
-return res.send("db error");
-}
-
-const ref = await db.collection("referrals").doc(trader).get();
-
-if(ref.exists){
-return res.json({
-ok:true,
-trader_id: trader
-});
-}
-
-}catch(e){
-console.log("firebase check error", e);
-}
-
-return res.json({ok:false});
-
-});
-
-/* =========================
-   ПРОВЕРКА ДЕПОЗИТА
-========================= */
-
-app.get("/check-deposit", async (req,res)=>{
-
-  const trader = req.query.trader_id;
-
-  if(!trader){
-    return res.json({ok:false,amount:0});
-  }
-
-  try{
-
-    if(!db){
-      console.log("❌ DB NOT CONNECTED");
-      return res.json({ok:false,amount:0});
-    }
-
-    const ref = await db.collection("referrals").doc(trader).get();
-
-    if(ref.exists){
-
-      const data = ref.data();
-      const amount = parseFloat(data.deposit || 0);
-
-      if(amount >= 30){
-        return res.json({
-          ok:true,
-          amount:amount
-        });
-      }
-
-    }
-
-  }catch(e){
-    console.log("firebase check deposit error", e);
-  }
-
-  return res.json({
-    ok:false,
-    amount:0
-  });
-
-  
-});
-
-
-/* =========================
-   ПРОВЕРКА АПРУВА
-========================= */
 
 app.get("/check-approve",(req,res)=>{
 
@@ -624,7 +552,7 @@ console.log("git save error", e.message);
 
 },300000);
 
-app.get("/postback", async (req,res)=>{
+const handleAcademyPostback = async (req,res)=>{
   // Academy-only secure endpoint: never fall through to the legacy handler that
   // accepted arbitrary trader IDs and could trigger automatic redeposit approval.
   try {
