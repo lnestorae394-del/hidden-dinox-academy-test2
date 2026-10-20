@@ -1,0 +1,118 @@
+diff --git a/server.js b/server.js
+index 96c3c99..ba9dd33 100644
+--- a/server.js
++++ b/server.js
+@@ -5,6 +5,11 @@ const simpleGit = require("simple-git");
+ const app = express();
+ const git = simpleGit();
+ 
++/* HIDDEN DINOX ACADEMY: изолированный тестовый режим (только эмуляторы Firebase, см. academy/test-mode.js).
++   Без HD_TEST_MODE поведение сервера не меняется. При неверной настройке — остановка. */
++const HD_TEST_MODE = require("./academy/test-mode").resolveTestMode(process.env);
++if(HD_TEST_MODE) console.log("🧪 HD_TEST_MODE: эмуляторы Firebase, боты/git/approveTrader отключены");
++
+ const PARTNER_BOT_ADMIN = 838408932; // твой телеграм
+ 
+ let approvedDeposits = {};
+@@ -50,11 +55,16 @@ let db = null;
+ 
+ try{
+ 
++if(HD_TEST_MODE){
++// Эмуляторы: Admin SDK сам подключается по FIRESTORE_EMULATOR_HOST и FIREBASE_AUTH_EMULATOR_HOST
++admin.initializeApp({ projectId: process.env.GCLOUD_PROJECT });
++}else{
+ const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
+ 
+ admin.initializeApp({
+ credential: admin.credential.cert(serviceAccount)
+ });
++}
+ 
+ db = admin.firestore();
+ 
+@@ -123,6 +133,18 @@ const DEV_MODE = true;
+    STATIC
+ ========================= */
+ 
++/* =========================
++   HIDDEN DINOX ACADEMY
++   (закрывает public/bot, подключает /api и /academy; старые маршруты не меняются)
++========================= */
++
++const { attachAcademy, blockPrivateStatic } = require("./academy");
++blockPrivateStatic(app);
++const academy = attachAcademy({
++app, express, admin, db,
++publicDir: require("path").join(__dirname, "public")
++});
++
+ app.set("etag", true);
+ 
+ app.use(express.static("public", {
+@@ -168,7 +190,7 @@ app.get("/dev-deposit",(req,res)=>{
+ 
+ const adminKey = req.query.key;
+ 
+-if(adminKey !== process.env.DEV_KEY){
++if(!process.env.DEV_KEY || adminKey !== process.env.DEV_KEY){
+ return res.send("forbidden");
+ }
+ 
+@@ -543,8 +565,10 @@ setTimeout(generateTrade, getMarketDelay());
+ 
+ generateTrade();
+ 
++if(!HD_TEST_MODE){
+ require("./public/bot/bot");
+ require("./public/bot/partnerBot");
++}
+ 
+ app.get("/stats",(req,res)=>{
+ 
+@@ -580,7 +604,7 @@ error: "server_error"
+    AUTO SAVE STATS TO GIT
+ ========================= */
+ 
+-setInterval(async()=>{
++if(!HD_TEST_MODE) setInterval(async()=>{
+ 
+ try{
+ 
+@@ -602,6 +626,13 @@ console.log("git save error", e.message);
+ 
+ app.get("/postback", async (req,res)=>{
+ 
++/* HIDDEN DINOX ACADEMY: отдельная проверенная обработка (не влияет на ответ и старую логику) */
++try{
++await academy.postback.handle(req.query, { ip: req.ip });
++}catch(e){
++console.log("academy postback error", e && e.message);
++}
++
+ const click =
+ req.query.click_id ||
+ req.query.clickid ||
+@@ -647,7 +678,7 @@ await db.collection("referrals").doc(trader).set({
+ trader_id: trader,
+ click_id: click,
+ created: Date.now()
+-});
++}, { merge: true }); // merge: повторная регистрация не стирает deposit и данные академии
+ 
+ console.log("🔥 saved referral:", trader);
+ 
+@@ -751,9 +782,13 @@ return res.send("no partner");
+ 
+ try{
+ 
++if(HD_TEST_MODE){
++console.log("🧪 approveTrader пропущен (тестовый режим)");
++}else{
+ const { approveTrader } = require("./public/bot/partnerBot");
+ 
+ approveTrader(trader, partner, amount);
++}
+ 
+ }catch(e){
+ console.log("bot redeposit error",e);
