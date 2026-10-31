@@ -1,0 +1,21 @@
+/* Chart Training — в стиле страниц обучения */
+.ct-tabs{display:flex;gap:8px;margin:6px 0 16px}
+.ct-tab{padding:9px 16px;border-radius:999px;border:1px solid rgba(139,234,36,.25);background:transparent;color:inherit;font:inherit;font-weight:600;cursor:pointer}
+.ct-tab[aria-selected="true"]{background:#8bea24;color:#061006;border-color:#8bea24}
+.ct-label{display:inline-block;margin:0 0 10px;padding:6px 12px;border-radius:10px;font-size:12.5px;font-weight:700}
+.ct-label.synthetic{background:rgba(255,209,102,.12);color:#ffd166;border:1px solid rgba(255,209,102,.35)}
+.ct-label.historical{background:rgba(139,234,36,.08);color:#9cf03a;border:1px solid rgba(139,234,36,.3)}
+.ct-chart{width:100%;border-radius:16px;border:1px solid rgba(139,234,36,.16);background:#070a07;display:block;touch-action:manipulation;cursor:crosshair}
+.ct-q{margin:14px 0 10px;font-size:16px;line-height:1.45}
+.ct-form{display:grid;gap:12px;margin-top:8px}
+.ct-row{display:flex;flex-wrap:wrap;gap:8px}
+.ct-chip{display:inline-flex;align-items:center;gap:6px;padding:9px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);cursor:pointer;user-select:none}
+.ct-chip input{accent-color:#8bea24}
+.ct-chip:has(input:checked){border-color:#8bea24;background:rgba(139,234,36,.08)}
+.ct-f{display:grid;gap:6px}.ct-f input,.ct-f textarea{width:100%;box-sizing:border-box;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:#0b0f0b;color:inherit;font:inherit}
+.ct-grid2{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.ct-score{font-size:30px;font-weight:800;color:#9cf03a}
+.ct-crit{display:grid;gap:6px;margin:10px 0}.ct-crit div{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.03)}
+.ct-kind{padding:12px 14px;border-radius:12px;background:rgba(139,234,36,.08);margin:10px 0}
+.ct-hist{display:grid;gap:8px}.ct-hist div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border-radius:14px;border:1px solid rgba(139,234,36,.16)}
+@media (max-width:560px){.ct-grid2{grid-template-columns:minmax(0,1fr)}}
