@@ -63,7 +63,7 @@
 
 /* Mobile textarea readability fix — keep the composer layout unchanged. */
 .mn-field textarea{
-  min-height:56px;
+  min-height:70px;
   padding:12px 12px 24px;
   line-height:24px;
   overflow-y:auto;
@@ -76,5 +76,5 @@
 }
 @media (max-width:560px){
   .mn-composer{align-items:center;}
-  .mn-field textarea{min-height:56px;max-height:144px;}
+  .mn-field textarea{min-height:70px;max-height:144px;}
 }
