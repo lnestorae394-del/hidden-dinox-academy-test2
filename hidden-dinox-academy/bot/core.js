@@ -9,7 +9,7 @@
      429 → ожидание retry_after, 5xx/сеть → до 3 попыток, 403 → пользователь недоступен; пакеты по batchSize. */
 const crypto = require("crypto");
 const DEFAULTS = { batchSize: 25, sendIntervalMs: 40, progressEveryMs: 3000, leaseMs: 60e3, maxTempRetries: 3, max429: 8, targetsChunk: 400 };
-const BTN_ACADEMY = "🟢 Открыть академию", BTN_SUPPORT = "Поддержка @hiddendinoxsupport";
+const BTN_ACADEMY = "🟢 Открыть академию", BTN_SUPPORT = "Поддержка";
 const START_CAPTION = "Добро пожаловать в Hidden Dinox Academy 🔥\n\nНажми кнопку ниже, чтобы открыть академию и получить доступ к обучению.";
 const STATUS_RU = { draft: "черновик", sending: "идёт рассылка", sent: "разослан", deleted: "удалён" };
 const esc = s => String(s == null ? "" : s).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
